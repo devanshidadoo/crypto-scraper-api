@@ -8,3 +8,4 @@ huggingface-hub   # if you ever switch to the HF Inference API
 transformers      # ensure this’s present for pipeline()
 gunicorn
 tensorflow
+tf-keras
