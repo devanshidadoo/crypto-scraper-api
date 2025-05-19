@@ -3,5 +3,8 @@ flask-cors
 requests
 beautifulsoup4
 newspaper3k
-gunicorn
 lxml_html_clean
+huggingface-hub   # if you ever switch to the HF Inference API
+transformers      # ensure this’s present for pipeline()
+gunicorn
+tensorflow
