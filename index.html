@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head><title>Crypto Scraper</title></head>
+<body>
+  <textarea id="urls" rows="4" cols="50" placeholder="One URL per line"></textarea><br>
+  <button id="run">Run</button>
+  <button id="download" disabled>Download CSV</button>
+  <pre id="output"></pre>
+
+  <script>
+    let lastResults = [];
+
+    document.getElementById('run').onclick = async () => {
+      const urls = document
+        .getElementById('urls')
+        .value
+        .split('\n')
+        .filter(Boolean);
+
+      const res = await fetch('http://localhost:8000/process', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ urls })
+      });
+      const data = await res.json();
+      lastResults = data.results;
+      document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+
+      // Enable download once we have results
+      document.getElementById('download').disabled = lastResults.length === 0;
+    };
+
+    document.getElementById('download').onclick = () => {
+      if (!lastResults.length) return;
+
+      // 1) Build CSV header row
+      const headers = ['url','title','summary','coin','error'];
+      const csvRows = [
+        headers.join(','),  // e.g. "url,title,summary,coin,error"
+      ];
+
+      // 2) Build each data row
+      for (const rowObj of lastResults) {
+        const row = headers.map(h => {
+          // escape double-quotes by doubling them
+          const cell = rowObj[h] || '';
+          return `"${cell.replace(/"/g,'""')}"`
+        }).join(',');
+        csvRows.push(row);
+      }
+
+      // 3) Create a Blob and download link
+      const csvString = csvRows.join('\r\n');
+      const blob = new Blob([csvString], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'results.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    };
+  </script>
+</body>
+</html>
